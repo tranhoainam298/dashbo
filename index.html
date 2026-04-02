@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Executive Unified Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <aside class="sidebar">
+            <h2>Acme Corp</h2>
+            <nav>
+                <ul>
+                    <li class="active"><a href="#">Unified View</a></li>
+                    <li><a href="#">HR System</a></li>
+                    <li><a href="#">Payroll System</a></li>
+                    <li><a href="#">Settings</a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <header>
+                <h1>Executive Dashboard</h1>
+                <div class="header-actions">
+                    <span id="last-updated">Last Updated: Never</span>
+                    <button id="refresh-btn" class="btn primary">Refresh Data</button>
+                </div>
+            </header>
+
+            <div id="error-container"></div>
+
+            <section class="kpi-grid">
+                <div class="kpi-card">
+                    <h3>Current Page Records</h3>
+                    <p id="kpi-total" class="kpi-value">0</p>
+                </div>
+                <div class="kpi-card">
+                    <h3>HR System Status</h3>
+                    <p id="kpi-hr" class="kpi-value status-indicator">Waiting...</p>
+                </div>
+                <div class="kpi-card">
+                    <h3>Payroll System Status</h3>
+                    <p id="kpi-payroll" class="kpi-value status-indicator">Waiting...</p>
+                </div>
+            </section>
+
+            <section class="table-container">
+                <div class="table-header">
+                    <h2>Employee Master List</h2>
+                    <input type="text" id="local-search" placeholder="Filter current page..." class="search-input">
+                </div>
+                
+                <div class="table-responsive">
+                    <table id="unified-table">
+                        <thead>
+                            <tr>
+                                <th>Emp Number</th>
+                                <th>Full Name</th>
+                                <th>Email (HR)</th>
+                                <th>Phone (HR)</th>
+                                <th>Pay Rate (Payroll)</th>
+                                <th>Vacation (Payroll)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-body">
+                            </tbody>
+                    </table>
+                </div>
+                
+                <div id="loading-spinner" class="spinner-overlay hidden">
+                    <div class="spinner"></div>
+                    <p>Fetching Live Data...</p>
+                </div>
+            </section>
+
+            <section class="pagination">
+                <button id="prev-btn" class="btn" disabled>&laquo; Previous</button>
+                <div class="page-controls">
+                    <span>Page</span>
+                    <input type="number" id="page-input" value="1" min="1" max="10901">
+                    <button id="go-btn" class="btn secondary">Go</button>
+                </div>
+                <button id="next-btn" class="btn">Next &raquo;</button>
+            </section>
+        </main>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
