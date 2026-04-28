@@ -4,7 +4,93 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Executive Unified Dashboard</title>
-    <link rel="stylesheet" href="style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        :root {
+            --bg-color: #f4f7f6; --sidebar-bg: #2c3e50; --sidebar-text: #ecf0f1;
+            --card-bg: #ffffff; --text-primary: #333333; --text-secondary: #7f8c8d;
+            --primary-color: #3498db; --border-color: #e0e6ed; --success: #2ecc71;
+            --danger: #e74c3c; --warning: #f1c40f; --info: #9b59b6;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text-primary); display: flex; height: 100vh; overflow: hidden; }
+
+        /* Layout */
+        .dashboard-container { display: flex; width: 100%; }
+        .sidebar { width: 250px; background-color: var(--sidebar-bg); color: var(--sidebar-text); padding: 20px 0; display: flex; flex-direction: column; }
+        .sidebar h2 { text-align: center; margin-bottom: 30px; letter-spacing: 1px; }
+        .sidebar ul { list-style: none; }
+        .sidebar li a { display: block; padding: 15px 25px; color: var(--sidebar-text); text-decoration: none; transition: 0.3s; }
+        .sidebar li.active a, .sidebar li a:hover { background-color: #34495e; border-left: 4px solid var(--primary-color); }
+
+        .main-content { flex: 1; padding: 30px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; }
+
+        /* Header (Đã cập nhật để hiển thị Tổng số liệu CEO) */
+        header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; }
+        
+        .kpi-container { display: flex; gap: 25px; display: none; } /* Mặc định ẩn, app.js sẽ bật lên */
+        .kpi-box { text-align: right; }
+        .kpi-box.bordered { border-left: 2px solid var(--border-color); padding-left: 25px; }
+        .kpi-title { font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase; font-weight: bold; margin-bottom: 3px; }
+        .kpi-value { font-size: 1.6rem; font-weight: bold; }
+
+        /* CEO ALERTS SECTION */
+        .alerts-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; display: none; }
+        .alert-card { background: var(--card-bg); padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border-left: 5px solid; cursor: pointer; transition: transform 0.2s; }
+        .alert-card:hover { transform: translateY(-3px); box-shadow: 0 4px 8px rgba(0,0,0,0.15); }
+        .alert-card h3 { font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 5px; }
+        .alert-card .val { font-size: 1.5rem; font-weight: bold; }
+        #alert-card-bday { border-color: var(--primary-color); }
+        #alert-card-anniv { border-color: var(--success); }
+        #alert-card-vacation { border-color: var(--danger); }
+        #alert-card-benefits { border-color: var(--warning); }
+
+        /* CEO CHARTS SECTION */
+        .charts-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; display: none; }
+        .chart-wrapper { background: var(--card-bg); border-radius: 8px; padding: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border: 1px solid var(--border-color); height: 320px; display: flex; flex-direction: column; }
+        .chart-wrapper.full-width { grid-column: span 2; height: 350px; }
+        .chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .chart-header h3 { font-size: 1rem; color: var(--text-primary); }
+        .chart-select { padding: 4px 8px; border-radius: 4px; border: 1px solid var(--border-color); outline: none; font-size: 0.85rem; cursor: pointer; }
+        .chart-canvas-container { flex: 1; position: relative; }
+
+        /* Table */
+        .table-container { background: var(--card-bg); border-radius: 8px; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); position: relative; flex: 1; min-height: 400px; display: flex; flex-direction: column; }
+        .table-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .search-input { padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 4px; width: 250px; }
+        .table-responsive { overflow-x: auto; flex: 1; overflow-y: auto; }
+        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem; }
+        th, td { padding: 12px 15px; border-bottom: 1px solid var(--border-color); }
+        th { background-color: #f8fafc; position: sticky; top: 0; z-index: 10; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+        tr:hover { background-color: #fdfdfd; }
+        .badge { display: inline-block; padding: 4px 8px; border-radius: 12px; font-size: 0.8rem; color: white; margin-left: 10px; }
+
+        /* Chỉ báo nguồn (Source Indicator) tinh tế */
+        .source-link { display: flex; align-items: center; gap: 5px; font-size: 1.1rem; }
+        .source-icon { opacity: 0.2; filter: grayscale(1); transition: 0.3s; }
+        .source-icon.active { opacity: 1; filter: grayscale(0); }
+        .link-chain { color: var(--success); font-size: 0.8rem; }
+
+        /* Pagination & Buttons */
+        .pagination { display: flex; justify-content: space-between; align-items: center; background: var(--card-bg); padding: 15px 0 0 0; border-top: 1px solid var(--border-color); margin-top: 15px;}
+        .page-controls { display: flex; align-items: center; gap: 10px; }
+        #page-input { width: 70px; padding: 8px; text-align: center; border: 1px solid var(--border-color); border-radius: 4px; }
+        .btn { padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; transition: 0.2s; font-weight: 600; }
+        .btn.primary { background: var(--primary-color); color: white; }
+        .btn.primary:hover { background: #2980b9; }
+        .btn.secondary { background: #ecf0f1; color: var(--text-primary); border: 1px solid var(--border-color); }
+        .btn.secondary:hover { background: #bdc3c7; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        /* Spinners */
+        .spinner-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255,255,255,0.9); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 20; }
+        .spinner-overlay.hidden { display: none; }
+        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary-color); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 10px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
 </head>
 <body>
     <div class="dashboard-container">
@@ -12,77 +98,113 @@
             <h2>Acme Corp</h2>
             <nav>
                 <ul>
-                    <li class="active"><a href="#">Unified View</a></li>
-                    <li><a href="#">HR System</a></li>
-                    <li><a href="#">Payroll System</a></li>
-                    <li><a href="#">Settings</a></li>
+                    <li class="active" id="nav-unified"><a href="#"><i class="fa-solid fa-chart-pie"></i> CEO Dashboard</a></li>
+                    <li id="nav-hr"><a href="#"><i class="fa-solid fa-users"></i> HR Data (Raw)</a></li>
+                    <li id="nav-payroll"><a href="#"><i class="fa-solid fa-money-check-dollar"></i> Payroll Data (Raw)</a></li>
                 </ul>
             </nav>
         </aside>
 
         <main class="main-content">
             <header>
-                <h1>Executive Dashboard</h1>
-                <div class="header-actions">
-                    <span id="last-updated">Last Updated: Never</span>
-                    <button id="refresh-btn" class="btn primary">Refresh Data</button>
+                <div>
+                    <h1 id="page-title">Executive Summary Dashboard</h1>
+                    <div id="last-updated" style="color: var(--text-secondary); margin-top: 5px;">Last Updated: Live via BFF</div>
+                </div>
+                
+                <div id="global-kpi" class="kpi-container">
+                    <div class="kpi-box">
+                        <div class="kpi-title">Total Headcount</div>
+                        <div id="kpi-headcount" class="kpi-value" style="color: var(--primary-color);">0</div>
+                    </div>
+                    <div class="kpi-box bordered">
+                        <div class="kpi-title">Total YTD Payroll</div>
+                        <div id="kpi-payroll" class="kpi-value" style="color: var(--success);">$0</div>
+                    </div>
                 </div>
             </header>
 
-            <div id="error-container"></div>
-
-            <section class="kpi-grid">
-                <div class="kpi-card">
-                    <h3>Current Page Records</h3>
-                    <p id="kpi-total" class="kpi-value">0</p>
+            <section id="alerts-section" class="alerts-grid">
+                <div class="alert-card" id="alert-card-bday" onclick="drillDown('birthday')">
+                    <h3>Birthdays This Month</h3><p class="val" style="color: var(--primary-color)" id="alert-bday-val">0</p>
                 </div>
-                <div class="kpi-card">
-                    <h3>HR System Status</h3>
-                    <p id="kpi-hr" class="kpi-value status-indicator">Waiting...</p>
+                <div class="alert-card" id="alert-card-anniv" onclick="drillDown('anniversary')">
+                    <h3>Upcoming Anniversaries</h3><p class="val" style="color: var(--success)" id="alert-anniv-val">0</p>
                 </div>
-                <div class="kpi-card">
-                    <h3>Payroll System Status</h3>
-                    <p id="kpi-payroll" class="kpi-value status-indicator">Waiting...</p>
+                <div class="alert-card" id="alert-card-vacation" onclick="drillDown('vacation')">
+                    <h3>High Vacation (>15d)</h3><p class="val" style="color: var(--danger)" id="alert-vac-val">0</p>
+                </div>
+                <div class="alert-card" id="alert-card-benefits" onclick="drillDown('benefits')">
+                    <h3>Benefit Plan Changes</h3><p class="val" style="color: var(--warning)" id="alert-ben-val">0</p>
                 </div>
             </section>
 
-            <section class="table-container">
+            <section id="charts-section" class="charts-grid">
+                <div class="chart-wrapper">
+                    <div class="chart-header">
+                        <h3>Total Earnings Analysis</h3>
+                        <select id="earn-dimension" class="chart-select" onchange="renderEarningsChart()">
+                            <option value="department">By Department</option>
+                            <option value="gender">By Gender</option>
+                            <option value="ethnicity">By Ethnicity</option>
+                            <option value="empType">By Emp Type</option>
+                            <option value="shareholder">By Shareholder</option>
+                        </select>
+                    </div>
+                    <div class="chart-canvas-container"><canvas id="earningsChart"></canvas></div>
+                </div>
+                <div class="chart-wrapper">
+                    <div class="chart-header">
+                        <h3>Vacation Days Analysis</h3>
+                        <select id="vac-dimension" class="chart-select" onchange="renderVacationChart()">
+                            <option value="empType">By Emp Type</option>
+                            <option value="gender">By Gender</option>
+                            <option value="ethnicity">By Ethnicity</option>
+                        </select>
+                    </div>
+                    <div class="chart-canvas-container"><canvas id="vacationChart"></canvas></div>
+                </div>
+                <div class="chart-wrapper full-width">
+                    <div class="chart-header">
+                        <h3>Avg Benefits by Plan & Shareholder</h3>
+                    </div>
+                    <div class="chart-canvas-container"><canvas id="benefitsChart"></canvas></div>
+                </div>
+            </section>
+
+            <section class="table-container" id="drilldown-anchor">
                 <div class="table-header">
-                    <h2>Employee Master List</h2>
-                    <input type="text" id="local-search" placeholder="Filter current page..." class="search-input">
+                    <div>
+                        <h2 id="table-title" style="display: inline-block;">Unified Master List</h2>
+                        <span id="current-filter-badge" class="badge" style="background-color: var(--danger); display: none;">Filter: All</span>
+                    </div>
+                    <div>
+                        <button id="clear-filter-btn" class="btn secondary" style="display: none; margin-right: 10px;" onclick="clearFilter()">Clear Filter</button>
+                        <input type="text" id="local-search" placeholder="Search any name..." class="search-input">
+                    </div>
                 </div>
                 
                 <div class="table-responsive">
                     <table id="unified-table">
-                        <thead>
-                            <tr>
-                                <th>Emp Number</th>
-                                <th>Full Name</th>
-                                <th>Email (HR)</th>
-                                <th>Phone (HR)</th>
-                                <th>Pay Rate (Payroll)</th>
-                                <th>Vacation (Payroll)</th>
-                            </tr>
-                        </thead>
-                        <tbody id="table-body">
-                            </tbody>
+                        <thead id="table-head"></thead>
+                        <tbody id="table-body"></tbody>
                     </table>
                 </div>
                 
                 <div id="loading-spinner" class="spinner-overlay hidden">
                     <div class="spinner"></div>
-                    <p>Fetching Live Data...</p>
+                    <p id="loading-text">Fetching Live Data...</p>
                 </div>
-            </section>
-
-            <section class="pagination">
-                <button id="prev-btn" class="btn" disabled>&laquo; Previous</button>
-                <div class="page-controls">
-                    <span>Page</span>
-                    <input type="number" id="page-input" value="1" min="1" max="10901">
-                    <button id="go-btn" class="btn secondary">Go</button>
-                </div>
-                <button id="next-btn" class="btn">Next &raquo;</button>
+                
+                <section class="pagination" id="pagination-section">
+                    <button id="prev-btn" class="btn secondary" disabled>&laquo; Previous</button>
+                    <div class="page-controls">
+                        <span id="page-label">Page</span>
+                        <input type="number" id="page-input" value="1" min="1">
+                        <button id="go-btn" class="btn primary">Go</button>
+                    </div>
+                    <button id="next-btn" class="btn secondary">Next &raquo;</button>
+                </section>
             </section>
         </main>
     </div>
