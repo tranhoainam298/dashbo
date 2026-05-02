@@ -22,9 +22,6 @@
 9. [Luồng hoạt động (Workflows)](#-luồng-hoạt-động-workflows)
 10. [Tính toàn vẹn dữ liệu (ACID)](#-tính-toàn-vẹn-dữ-liệu--acid)
 11. [Xử lý lỗi phổ biến (Troubleshooting)](#-xử-lý-lỗi-phổ-biến-troubleshooting)
-12. [Q&A Bảo vệ đồ án](#-qa-bảo-vệ-đồ-án)
-13. [Cấu trúc thư mục](#-cấu-trúc-thư-mục)
-14. [Thông tin nhóm](#-thông-tin-nhóm)
 
 ---
 
