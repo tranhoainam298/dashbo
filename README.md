@@ -181,8 +181,33 @@ node bff-server.js
 ```
 *Truy cập UI tại:* `http://localhost:3000`
 
----
+### Bước 6: Cài đặt và chạy RabbitMQ (Bắt buộc)
+Hệ thống yêu cầu RabbitMQ để xử lý Message Queue. Cách nhanh nhất và sạch nhất là chạy qua Docker.
 
+**1. Cài đặt Docker Desktop:**
+- Tải và cài đặt Docker Desktop từ: [https://www.docker.com/products/docker-desktop/](https://www.docker.com/products/docker-desktop/)
+- Khởi động Docker Desktop và đảm bảo icon ở khay hệ thống hiển thị màu xanh (Engine running).
+
+**2. Chạy RabbitMQ Container:**
+-Mở một Terminal mới (hoặc Command Prompt) và chạy lệnh sau để tải image và khởi động RabbitMQ kèm giao diện quản lý (Management Plugin):
+```bash
+docker run -d --name rabbitmq-server -p 5672:5672 -p 15672:15672 rabbitmq:3-management
+```
+-Đăng nhập xem giao diện quản trị:
+
+Truy cập trình duyệt: http://localhost:15672
+
+Username: guest
+
+Password: guest
+
+Tại đây bạn có thể xem các Queue (hr_legacy_queue, payroll_legacy_queue) hoạt động realtime.
+-Cho những lần chạy dự án sau này:
+Bạn KHÔNG cần chạy lại lệnh docker run dài dòng phía trên nữa (nếu chạy sẽ bị lỗi trùng tên). Thay vào đó, chỉ cần đảm bảo đã khởi động docker, cmd gõ lệnh sau để
+bật lại container:
+
+Bash:
+docker start rabbitmq-server
 ---
 
 ## 🔌 Tài liệu API (BFF Server)
