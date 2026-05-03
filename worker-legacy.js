@@ -100,7 +100,9 @@ async function startLegacySyncWorker() {
 
                 } catch (e) {
                     console.error(`❌ [HR LỖI]`, e.message);
-                    // channel.nack(msg); // Nếu muốn cho RabbitMQ chạy lại tin nhắn lỗi
+                    // 👉 Sếp BỎ DẤU COMMENT dòng dưới đây, thêm {requeue: false} nếu muốn nó vào Dead Letter, hoặc true để thử lại liên tục
+                    channel.nack(msg, false, true); 
+                    console.log(`⏳ Đã ném tin nhắn ${data.fullName} trở lại Hàng đợi HR để chờ xử lý sau!`);
                 } finally {
                     if (pool) {
                         sql.close(); 
@@ -140,6 +142,9 @@ async function startLegacySyncWorker() {
 
                 } catch(e){
                     console.error(`❌ [PAYROLL LỖI]`, e.message);
+                    // 👉 Sếp THÊM DÒNG NÀY VÀO
+                    channel.nack(msg, false, true);
+                    console.log(`⏳ Đã ném tin nhắn ${data.fullName} trở lại Hàng đợi Payroll để chờ xử lý sau!`);
                 } finally {
                     if (mysqlConn) await mysqlConn.end();
                 }
