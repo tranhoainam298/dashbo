@@ -221,9 +221,6 @@ docker start rabbitmq-server
 
 ## ✨ Tính năng hệ thống
 
-*(Thêm screenshot thực tế của nhóm vào đây)*
-- `![Dashboard Unified View](placeholder_dashboard.jpg)`
-- `![Modal Add Employee](placeholder_modal.jpg)`
 
 **DASHBOARD (Unified Tab):**
 - **KPI Cards:** Tổng Headcount tự động xử lý Deduplication *(HR + Payroll - Trùng lặp)*.
