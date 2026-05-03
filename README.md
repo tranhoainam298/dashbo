@@ -150,7 +150,7 @@ CREATE TABLE outbox_events (
 3. Đảm bảo user là `postgres` và password là `123456`.
 4. (*Quan trọng*) Chạy lệnh sau để tránh lỗi trùng ID:
    ```sql
-   ALTER SEQUENCE employees_id_seq RESTART WITH 2200000;
+   ALTER SEQUENCE employees_id_seq RESTART WITH 2500000;
    ```
 
 ### Bước 4: Cài đặt thư viện Node.js
